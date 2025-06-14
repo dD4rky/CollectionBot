@@ -1,0 +1,16 @@
+FROM python:3.13.3-slim
+
+ENV data_dir="/app/data"
+
+ENV api_id=27610288
+ENV api_hash="40ead2ec1e172a250286c6e9bc12c072"
+
+WORKDIR /app
+
+COPY src/req.txt ./
+
+RUN pip install -r req.txt --no-cache-dir
+
+COPY src /app
+
+CMD [ "python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080" ]

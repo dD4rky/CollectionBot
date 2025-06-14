@@ -1,0 +1,13 @@
+FROM python:3.13.3-slim
+
+ENV token="6128480883:AAE6ntbpC8DXeBb64AGOcQ5m1x-xGCASreE"
+
+WORKDIR /app
+
+COPY src/req.txt ./
+
+RUN pip install -r req.txt --no-cache-dir
+
+COPY src /app
+
+CMD ["python", "main.py"]

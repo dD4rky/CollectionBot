@@ -1,0 +1,14 @@
+FROM python:3.13.2-slim
+
+ENV data_dir="/app/data"
+
+WORKDIR /app
+
+COPY src/req.txt ./
+
+RUN pip install -r req.txt --no-cache-dir
+
+COPY src /app
+ 
+EXPOSE 8080
+CMD [ "python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080" ]

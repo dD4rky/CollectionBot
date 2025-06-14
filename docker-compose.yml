@@ -1,0 +1,23 @@
+services:
+  handler: 
+    build: ./handler
+    restart: unless-stopped
+    depends_on:
+      - statistic
+      - mailling
+
+  statistic:
+    build: ./statistic
+    restart: unless-stopped
+    volumes:
+      - statistic-data:/app/data
+
+  mailling:
+    build: ./mailling
+    restart: unless-stopped
+    volumes:
+      - mailling-data:/app/data
+
+volumes:
+  statistic-data:
+  mailling-data:
