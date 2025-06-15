@@ -79,12 +79,12 @@ class DoneLsit(AbstractStorage):
     def __init__(self, filepath : str = "done.json"):
         super().__init__(filepath)
 
-    def __call__(self, user):
-        self.data.append(user)
+    def __call__(self, user : str):
+        self.data.append(user.lower())
         self.save()
 
-    def user_in_list(self, user) -> bool:
-        if user in self.data:
+    def user_in_list(self, user : str) -> bool:
+        if user.lower() in self.data:
             return True
         else:
             self.data.append(user)
@@ -105,7 +105,10 @@ async def mailling_loop():
             loop=loop) as client:
             user = queue.get_user()
             if user:
-                await client.send_message(user['user'], HELLO_MESSAGE)
+                try:
+                    await client.send_message(user['user'], HELLO_MESSAGE)
+                except:
+                    logging.warning("Invalid telegram tag")
             await asyncio.sleep(5)
 
 @asynccontextmanager
