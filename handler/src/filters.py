@@ -12,5 +12,5 @@ class MessageTypeFilter(Filter):
     def __init__(self, message_type: str) -> None:
         self.message_type = message_type
     async def __call__(self, msg: Message) -> bool:
-        return msg.content_type == self.message_type
+        return msg.content_type in self.message_type
         

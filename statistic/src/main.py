@@ -5,32 +5,42 @@ import json
 
 import logging
 
+from datetime import datetime
+
 logger = logging.getLogger(__name__)
 FORMAT = '[%(asctime)s]\t%(message)s'
 logging.basicConfig(filename='log.log', format=FORMAT)
+
+
+class StatisticUnit(BaseModel):
+    user_id : str
+    data : str
+    data_type : str
+    length : int
+    time : int
+    
 
 class Statistic():
     data : dict
     filepath : str
 
-    def __init__(self, filepath : str = "data.json"):
+    def __init__(self, filepath : str = "message_history.json"):
         data_dir = os.environ["data_dir"]
         self.filepath = os.path.join(data_dir, filepath)
         
         if not os.path.isfile(self.filepath):
             with open(self.filepath, "w+") as f:
-                json.dump({}, f, indent=4)
+                json.dump({}, self.filepath, indent=4)
         self.load()
 
-    def __call__(self, user_id, msg):
-        if user_id in self.data.keys():
-            self.data[user_id]["messages"].append(msg)
-            self.data[user_id]["count"] = len(self.data[user_id]["messages"])
-        else:
-            self.data[user_id] = {
-                "messages": [msg],
-                "count": 1 
+    def add(self, statistic_unit : StatisticUnit):
+        if not statistic_unit["user_id"] in self.data.keys():
+            self.data[statistic_unit["user_id"]] = {
+                "messages": [],
+                "count": 0 
             }
+        self.data[statistic_unit["user_id"]]["messages"].append(statistic_unit)
+        self.data[statistic_unit["user_id"]]["count"] = len(self.data[statistic_unit["user_id"]]["messages"])
         self.save()
 
     def load(self):
@@ -41,15 +51,21 @@ class Statistic():
         with open(self.filepath, "w") as f:
             json.dump(self.data, f, indent=4)
 
-class PostMessage(BaseModel):
-    user_id : str
-    msg : str
+
 
 app = fastapi.FastAPI(debug=False)
 statistic = Statistic()
 
 @app.post("/message")
-def message(request : PostMessage):
+def message(statistic_unit : StatisticUnit):
     global statistic
     
-    statistic(request.user_id, request.msg)
+    data = {
+        "user_id" : statistic_unit.user_id,
+        "data" : statistic_unit.data,
+        "data_type" : statistic_unit.data_type,
+        "length" : statistic_unit.length,
+        "time" : statistic_unit.time
+    } 
+
+    statistic.add(data)
