@@ -8,7 +8,6 @@ import asyncio
 import os
 
 from datetime import datetime
-from time import sleep
 
 import json
 
@@ -74,6 +73,8 @@ class MaillingQueue(AbstractStorage):
 
         return user
     
+    def get_queue(self):
+        return self.data
 
 class DoneLsit(AbstractStorage):
     def __init__(self, filepath : str = "done.json"):
@@ -99,18 +100,18 @@ async def mailling_loop():
     api_hash = os.environ["api_hash"]
 
     while True:
-        async with TelegramClient(session="dd4rky_dev", 
-            api_id=api_id,
-            api_hash=api_hash,
-            loop=loop) as client:
-            user = queue.get_user()
-            if user:
-                try:
-                    await client.send_message(user['user'], HELLO_MESSAGE)
-                except:
-                    logging.warning("Invalid telegram tag")
-            await asyncio.sleep(5)
+        try:
+            async with TelegramClient(session="dd4rky_dev", 
+                api_id=api_id,
+                api_hash=api_hash,
+                loop=loop) as client:
+                user = queue.get_user()
 
+                if user:
+                    await client.send_message(user['user'], HELLO_MESSAGE)
+                await asyncio.sleep(5)
+        except:
+            pass
 @asynccontextmanager
 async def lifespan(app: fastapi.FastAPI):
     loop = asyncio.get_event_loop()
@@ -141,7 +142,13 @@ def mailling(request : PostMessage):
 
     queue(users)
 
+@app.get('/get_queue')
+def get_queue():
+    global queue
 
+    queue_data = queue.get_queue()
+
+    return queue_data
 
 
 
