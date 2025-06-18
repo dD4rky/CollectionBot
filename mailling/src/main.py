@@ -148,7 +148,7 @@ def get_queue():
 
     queue_data = queue.get_queue()
 
-    return queue_data
+    return json.dumps(queue_data)
 
 
 

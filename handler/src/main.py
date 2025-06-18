@@ -1,5 +1,6 @@
 from aiogram import Dispatcher, Bot
 from aiogram.types import Message
+from aiogram.filters import Command
 import asyncio
 
 import os
@@ -8,24 +9,44 @@ import logging
 import re
 
 import requests
+import json
 
 from filters import ChatTypeFilter, MessageTypeFilter
 
-logger = logging.getLogger(__name__)
+from datetime import datetime
+
 FORMAT = '[%(asctime)s]\t%(message)s'
-logging.basicConfig(filename='log.log', format=FORMAT)
+logging.basicConfig(level=logging.INFO, format=FORMAT)
+
+token = os.environ['token']
 
 dp = Dispatcher()
+bot = Bot(token)
 
-@dp.message(
-    ChatTypeFilter(['group', 'supergroup']), 
-    MessageTypeFilter(['text', 'sticker', 'animation', 'document', 'photo', 'audio', 'voice', 'video', 'video_note', 'story'])
-    )
+@dp.message(ChatTypeFilter('private'), MessageTypeFilter('text'), Command("get_queue"))
+async def asdfasfsfasfasdf(msg : Message):
+    def create_message(i, user):
+        username = user["user"]
+        time = datetime.fromtimestamp(int(user["time"])).strftime("%d/%m/%Y, %H:%M:%S")
+        return f"{i}. {username}\n|\t{time}"
+
+    queue = requests.get("http://mailling:8080/get_queue")
+
+    queue_data = json.loads(queue.json())
+
+    if queue_data:
+        messages = [create_message(i, user) for i, user in enumerate(queue_data, start=1)]
+        message = "\n".join(messages)
+
+        await bot.send_message(msg.chat.id, message)
+    else:
+        await bot.send_message(msg.chat.id, "Now queue is empty")
+
+@dp.message(ChatTypeFilter(['group', 'supergroup']),  MessageTypeFilter(['text', 'sticker', 'animation', 'document', 'photo', 'audio', 'voice', 'video', 'video_note', 'story']) )
 async def statistic(msg : Message):
     if msg.from_user.is_bot:
         return
     
-    logger.info(f'\n\rNew message by user: {msg.from_user.id}\n\tMessage: {msg.text}')
     request_data = {}
 
     request_data["user_id"] = str(msg.from_user.id)
@@ -72,30 +93,22 @@ async def statistic(msg : Message):
         request_data["data"] = msg.story.id
         request_data["length"] = 1
 
-    await requests.post("http://statistic:8080/message", json=request_data)
+    requests.post("http://statistic:8080/message", json=request_data)
 
-@dp.message(
-    ChatTypeFilter('private'),
-    MessageTypeFilter('text')
-    )
+@dp.message(ChatTypeFilter('private'), MessageTypeFilter('text'))
 async def mailling(msg : Message):
     user_pattern = r'@(\w+){0,1000}'
     users = re.findall(user_pattern, msg.text)
 
     if not users:
         return
-    
-    logger.info(f'\n\rInitializating mailling for users: {", ".join(users)}')
-    
+        
     request_data = {
         "users" : users
     }
-    await requests.post("http://mailling:8080/mailling", json=request_data)
+    requests.post("http://mailling:8080/mailling", json=request_data)
 
 async def main():
-    token = os.environ['token']
-    bot = Bot(token)
-
     await dp.start_polling(bot)
 
 if __name__ == '__main__':
