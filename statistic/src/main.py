@@ -1,5 +1,5 @@
-import os 
 import fastapi
+import os 
 from pydantic import BaseModel
 import json
 
@@ -9,7 +9,7 @@ from datetime import datetime
 
 logger = logging.getLogger(__name__)
 FORMAT = '[%(asctime)s]\t%(message)s'
-logging.basicConfig(filename='log.log', format=FORMAT)
+logging.basicConfig(format=FORMAT)
 
 
 class StatisticUnit(BaseModel):
@@ -51,6 +51,8 @@ class Statistic():
         with open(self.filepath, "w") as f:
             json.dump(self.data, f, indent=4)
 
+    def get_filepath(self):
+        return self.filepath
 
 
 app = fastapi.FastAPI(debug=False)
@@ -69,3 +71,12 @@ def message(statistic_unit : StatisticUnit):
     } 
 
     statistic.add(data)
+
+@app.get("/get_statistic_file")
+def get_statistic_file():
+    global statistic
+
+    filepath = statistic.get_filepath()
+
+    return fastapi.responses.FileResponse(path=filepath, 
+                                          filename="statistic.json")
