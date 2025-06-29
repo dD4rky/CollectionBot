@@ -11,6 +11,8 @@ services:
     restart: unless-stopped
     volumes:
       - statistic-data:/app/data
+    ports:
+      - 8080:8080
 
   mailling:
     build: ./mailling
