@@ -1,13 +1,14 @@
 FROM python:3.13.3-slim
 
 ENV token="6128480883:AAE6ntbpC8DXeBb64AGOcQ5m1x-xGCASreE"
+ENV debug_token="8147943433:AAEJ7vZGsBoKrgPWAY6yPvjUIFC1F1MDKYk"
 
 WORKDIR /app
 
-COPY src/req.txt ./
+COPY app/req.txt ./
 
 RUN pip install -r req.txt --no-cache-dir
 
-COPY src /app
+COPY app /app
 
-CMD ["python", "main.py"]
+CMD ["python", "-m", "main"]

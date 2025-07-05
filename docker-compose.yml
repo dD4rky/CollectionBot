@@ -5,6 +5,8 @@ services:
     depends_on:
       - statistic
       - mailling
+    env_file:
+      - ./docker-compose-config.env
 
   statistic:
     build: ./statistic
@@ -13,13 +15,17 @@ services:
       - statistic-data:/app/data
     ports:
       - 8080:8080
+    env_file:
+      - ./docker-compose-config.env
 
   mailling:
     build: ./mailling
     restart: unless-stopped
     volumes:
       - mailling-data:/app/data
-
+    env_file:
+      - ./docker-compose-config.env
+      
 volumes:
   statistic-data:
   mailling-data:

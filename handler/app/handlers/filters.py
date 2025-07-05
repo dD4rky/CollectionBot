@@ -1,7 +1,6 @@
 from aiogram.filters import Filter
 from aiogram.types import Message
 
-
 class ChatTypeFilter(Filter):
     def __init__(self, chat_type: str | list[str]) -> None:
         self.chat_type = chat_type
