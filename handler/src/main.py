@@ -13,7 +13,7 @@ import json
 
 from filters import ChatTypeFilter, MessageTypeFilter
 
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 FORMAT = '[%(asctime)s]\t%(message)s'
 logging.basicConfig(level=logging.INFO, format=FORMAT)
@@ -27,7 +27,10 @@ bot = Bot(token)
 async def asdfasfsfasfasdf(msg : Message):
     def create_message(i, user):
         username = user["user"]
-        time = datetime.fromtimestamp(int(user["time"])).strftime("%d/%m/%Y, %H:%M:%S")
+
+        tz = timezone(timedelta(hours=3), name="UTC+3")
+        time = datetime.fromtimestamp(int(user["time"]), tz).strftime("%d/%m/%Y, %H:%M:%S")
+
         return f"{i}. {username}\n|\t{time}"
 
     queue = requests.get("http://mailling:8080/get_queue")
